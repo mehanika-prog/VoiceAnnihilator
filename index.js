@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const TelegramBot = require('node-telegram-bot-api')
 const speech = require('@google-cloud/speech')
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require('sqlite3').verbose()
 
 //=================================//
 
@@ -11,7 +11,7 @@ const dbPath = path.join(__dirname, '/databases', '/va3000.sqlite3')
 
 //=================================//
 
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {polling: true})
+const bot = new TelegramBot('1384093348:AAEheFAHfeFQu-goUxKTq0qOI0WVZSZZjuU', {polling: true})
 
 const client = new speech.SpeechClient();
 
@@ -23,13 +23,49 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE, err => {
 
 //=================================//
 
-bot.onText(/\/start/,async msg => {
+bot.onText(/\/start/, msg => {
 
 	if (msg.chat.type === 'private') {
 
-		const chatId = msg.chat.id
+		const chatId = msg.from.id
+		const is_bot = msg.from.is_bot
+		const first_name = msg.from.first_name
+		const last_name = msg.from.last_name
+		const username = msg.from.username
+		let language_code = msg.from.language_code
 
-		bot.sendMessage(chatId, JSON.stringify(await db.all('SELECT * FROM Users')))
+		switch (language_code) {
+
+			case 'en': language_code = 'en-US'
+			case 'sk': language_code = 'sk-SK'
+			case 'ru': language_code = 'ru-RU'
+			case 'uk': language_code = 'uk-UA'
+
+		}
+
+		db.get('SELECT * FROM Users WHERE id = ?', chatId, (err, row) => {
+
+			if (row) {
+
+				console.log(row);
+
+			}else{
+
+				db.run('INSERT INTO Users (id, is_bot, voice_to_text, first_name, last_name, username, language_code) VALUES (?, ?, 0, ?, ?, ?, ?)', 
+
+						chatId, is_bot, first_name, last_name, username, language_code, (err) => {
+
+							if (err) console.log(err)
+
+							bot.sendMessage(chatId, 'HI =)')
+
+						}
+
+				)
+
+			}
+
+		})
 
 	}
 
