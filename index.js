@@ -11,7 +11,7 @@ const dbPath = path.join(__dirname, '/databases', '/va3000.sqlite3')
 
 //=================================//
 
-const bot = new TelegramBot('1384093348:AAEheFAHfeFQu-goUxKTq0qOI0WVZSZZjuU', {polling: true})
+const bot = new TelegramBot(process.env. TELEGRAM_BOT_TOKEN, {polling: true})
 
 const client = new speech.SpeechClient();
 
