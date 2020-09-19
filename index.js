@@ -11,7 +11,7 @@ const dbPath = path.join(__dirname, '/databases', '/va3000.sqlite3')
 
 //=================================//
 
-const bot = new TelegramBot(process.env. TELEGRAM_BOT_TOKEN, {polling: true})
+const bot = new TelegramBot('1384093348:AAEheFAHfeFQu-goUxKTq0qOI0WVZSZZjuU', {polling: true})
 
 const client = new speech.SpeechClient();
 
@@ -36,11 +36,11 @@ bot.onText(/\/start/, msg => {
 
 		switch (language_code) {
 
-			case 'en': language_code = 'en-US'; break
-			case 'sk': language_code = 'sk-SK'; break
-			case 'ru': language_code = 'ru-RU'; break
-			case 'uk': language_code = 'uk-UA'; break
-			default: language_code = 'ru-RU'; break
+			case 'en': language_code = 'en-US'; break;
+			case 'sk': language_code = 'sk-SK'; break;
+			case 'ru': language_code = 'ru-RU'; break;
+			case 'uk': language_code = 'uk-UA'; break;
+			default: language_code = 'ru-RU'; break;
 
 		}
 
@@ -48,11 +48,11 @@ bot.onText(/\/start/, msg => {
 
 			if (row) {
 
-				
+				//TODO
 
 			}else{
 
-				db.run('INSERT INTO Users (id, is_bot, voice_to_text, first_name, last_name, username, language_code) VALUES (?, ?, 0, ?, ?, ?, ?)', 
+				db.run('INSERT INTO Users (id, is_bot, can_change_mode, voice_to_text, first_name, last_name, username, language_code) VALUES (?, ?, 0, 0, ?, ?, ?, ?)', 
 
 						chatId, is_bot, first_name, last_name, username, language_code, (err) => {
 
@@ -72,47 +72,151 @@ bot.onText(/\/start/, msg => {
 
 })
 
-bot.onText(/\/cl/, msg => {
+bot.onText(/\/settings/, msg => {
 
 	if (msg.chat.type === 'private') {
 
 		const chatId = msg.from.id
-		// const is_bot = msg.from.is_bot
-		// const first_name = msg.from.first_name
-		// const last_name = msg.from.last_name
-		// const username = msg.from.username
-		// let language_code = msg.from.language_code
 
-		bot.sendMessage(chatId, 'Please select a language.', {
+		db.get('SELECT can_change_mode FROM Users WHERE id = ?', chatId, (err, row) => {
 
-			reply_markup: {
+			if (row){
 
-				inline_keyboard: [
+				if (row.can_change_mode) {
 
-					{
-						text: 'English',
-						callback_data: 'en-US'	
-					},
-					{
-						text: 'Slovenčina',
-						callback_data: 'sk-SK'	
-					},
-					{
-						text: 'Русский',
-						callback_data: 'ru-RU'	
-					},
-					{
-						text: 'Українська',
-						callback_data: 'uk-UA'	
-					}
+					bot.sendMessage(chatId, 'Language:', {
 
-				]
+						reply_markup: {
+			
+							inline_keyboard: [
+			
+								[
+			
+									{
+										text: 'English',
+										callback_data: 'en-US'	
+									},
+									{
+										text: 'Slovenčina',
+										callback_data: 'sk-SK'	
+									}
+			
+								],
+								[
+			
+									{
+										text: 'Русский',
+										callback_data: 'ru-RU'	
+									},
+									{
+										text: 'Українська',
+										callback_data: 'uk-UA'	
+									}
+			
+								]
+			
+							]
+			
+						}
+			
+					})
+			
+					bot.sendMessage(chatId, 'Mode:', {
+			
+						reply_markup: {
+			
+							inline_keyboard: [
+			
+								[
+			
+									{
+										text: '🐤',
+										callback_data: 0	
+									},
+									{
+										text: 'Text',
+										callback_data: 1
+									}
+			
+								]
+			
+							]
+			
+						}
+			
+					})
+
+				}else{
+
+					bot.sendMessage(chatId, 'You can\'t use this command!')
+	
+				}
+
+			}else{
+
+				bot.sendMessage(chatId, 'You can\'t use this command!')
 
 			}
 
 		})
 
 	}
+
+})
+
+bot.on('callback_query', msg => {
+
+	const chatId = msg.from.id
+
+		db.get('SELECT can_change_mode FROM Users WHERE id = ?', chatId, (err, row) => {
+
+			if (row){
+
+				if (row.can_change_mode) {
+
+					switch (msg.data) {
+
+						case 'en-US':
+							db.run('UPDATE Users SET language_code = \'en-US\' WHERE id = ?', chatId);
+						break;
+
+						case 'sk-SK':
+							db.run('UPDATE Users SET language_code = \'sk-SK\' WHERE id = ?', chatId);
+						break;
+
+						case 'ru-RU':
+							db.run('UPDATE Users SET language_code = \'ru-RU\' WHERE id = ?', chatId);
+						break;
+
+						case 'uk-UA':
+							db.run('UPDATE Users SET language_code = \'uk-UA\' WHERE id = ?', chatId);
+						break;
+
+						case '0':
+							db.run('UPDATE Users SET voice_to_text = 0 WHERE id = ?', chatId);
+						break;
+
+						case '1':
+							db.run('UPDATE Users SET voice_to_text = 1 WHERE id = ?', chatId);
+						break;
+
+						default: break;
+			
+					}
+
+				}else{
+
+					bot.sendMessage(chatId, 'You can\'t use this command!')
+	
+				}
+
+			}else{
+
+				bot.sendMessage(chatId, 'You can\'t use this command!')
+
+			}
+
+		})
 
 })
 
