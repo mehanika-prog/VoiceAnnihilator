@@ -74,93 +74,7 @@ bot.onText(/\/start/, msg => {
 
 bot.onText(/\/settings/, msg => {
 
-	if (msg.chat.type === 'private') {
-
-		const chatId = msg.from.id
-
-		db.get('SELECT can_change_mode FROM Users WHERE id = ?', chatId, (err, row) => {
-
-			if (row){
-
-				if (row.can_change_mode) {
-
-					bot.sendMessage(chatId, 'Language:', {
-
-						reply_markup: {
-			
-							inline_keyboard: [
-			
-								[
-			
-									{
-										text: 'English',
-										callback_data: 'en-US'	
-									},
-									{
-										text: 'Slovenčina',
-										callback_data: 'sk-SK'	
-									}
-			
-								],
-								[
-			
-									{
-										text: 'Русский',
-										callback_data: 'ru-RU'	
-									},
-									{
-										text: 'Українська',
-										callback_data: 'uk-UA'	
-									}
-			
-								]
-			
-							]
-			
-						}
-			
-					})
-			
-					bot.sendMessage(chatId, 'Mode:', {
-			
-						reply_markup: {
-			
-							inline_keyboard: [
-			
-								[
-			
-									{
-										text: '🐤',
-										callback_data: 0	
-									},
-									{
-										text: 'Text',
-										callback_data: 1
-									}
-			
-								]
-			
-							]
-			
-						}
-			
-					})
-
-				}else{
-
-					bot.sendMessage(chatId, 'You can\'t use this command!')
-	
-				}
-
-			}else{
-
-				bot.sendMessage(chatId, 'You can\'t use this command!')
-
-			}
-
-		})
-
-	}
+	showSettings(msg.from.id, msg.chat.type)
 
 })
 
@@ -168,47 +82,43 @@ bot.on('callback_query', msg => {
 
 	const chatId = msg.from.id
 
-		db.get('SELECT can_change_mode FROM Users WHERE id = ?', chatId, (err, row) => {
+	db.get('SELECT can_change_mode FROM Users WHERE id = ?', chatId, (err, row) => {
 
-			if (row){
+		if (row){
 
-				if (row.can_change_mode) {
+			if (row.can_change_mode) {
 
-					switch (msg.data) {
+				switch (msg.data) {
 
-						case 'en-US':
-							db.run('UPDATE Users SET language_code = \'en-US\' WHERE id = ?', chatId);
-						break;
+					case 'en-US':
+						db.run('UPDATE Users SET language_code = \'en-US\' WHERE id = ?', chatId);
+					break;
 
-						case 'sk-SK':
-							db.run('UPDATE Users SET language_code = \'sk-SK\' WHERE id = ?', chatId);
-						break;
+					case 'sk-SK':
+						db.run('UPDATE Users SET language_code = \'sk-SK\' WHERE id = ?', chatId);
+					break;
 
-						case 'ru-RU':
-							db.run('UPDATE Users SET language_code = \'ru-RU\' WHERE id = ?', chatId);
-						break;
+					case 'ru-RU':
+						db.run('UPDATE Users SET language_code = \'ru-RU\' WHERE id = ?', chatId);
+					break;
 
-						case 'uk-UA':
-							db.run('UPDATE Users SET language_code = \'uk-UA\' WHERE id = ?', chatId);
-						break;
+					case 'uk-UA':
+						db.run('UPDATE Users SET language_code = \'uk-UA\' WHERE id = ?', chatId);
+					break;
 
-						case '0':
-							db.run('UPDATE Users SET voice_to_text = 0 WHERE id = ?', chatId);
-						break;
+					case '0':
+						db.run('UPDATE Users SET voice_to_text = 0 WHERE id = ?', chatId);
+					break;
 
-						case '1':
-							db.run('UPDATE Users SET voice_to_text = 1 WHERE id = ?', chatId);
-						break;
+					case '1':
+						db.run('UPDATE Users SET voice_to_text = 1 WHERE id = ?', chatId);
+					break;
 
-						default: break;
-			
-					}
-
-				}else{
-
-					bot.sendMessage(chatId, 'You can\'t use this command!')
-	
+					default: break;
+		
 				}
+
+				// showSettings(msg.from.id, msg.chat.type)
 
 			}else{
 
@@ -216,7 +126,13 @@ bot.on('callback_query', msg => {
 
 			}
 
-		})
+		}else{
+
+			bot.sendMessage(chatId, 'You can\'t use this command!')
+
+		}
+
+	})
 
 })
 
@@ -285,3 +201,93 @@ bot.on('sticker', msg => {
 	if (msg.chat.type === 'private') bot.sendMessage(msg.chat.id, `${JSON.stringify(msg)}`)
 
 })
+
+const showSettings = (chatId, type) => {
+
+	if (type === 'private') {
+
+		db.get('SELECT * FROM Users WHERE id = ?', chatId, (err, row) => {
+
+			if (row){
+
+				if (row.can_change_mode) {
+
+					bot.sendMessage(chatId, 'Language:', {
+
+						reply_markup: {
+			
+							inline_keyboard: [
+			
+								[
+			
+									{
+										text: `English ${row.language_code === 'en-US' ? ' ✅' : ''}`,
+										callback_data: 'en-US'	
+									},
+									{
+										text: `Slovenčina ${row.language_code === 'sk-SK' ? ' ✅' : ''}`,
+										callback_data: 'sk-SK'	
+									}
+			
+								],
+								[
+			
+									{
+										text: `Русский ${row.language_code === 'ru-RU' ? ' ✅' : ''}`,
+										callback_data: 'ru-RU'	
+									},
+									{
+										text: `Українська ${row.language_code === 'uk-UA' ? ' ✅' : ''}`,
+										callback_data: 'uk-UA'	
+									}
+			
+								]
+			
+							]
+			
+						}
+			
+					})
+			
+					bot.sendMessage(chatId, 'Mode:', {
+			
+						reply_markup: {
+			
+							inline_keyboard: [
+			
+								[
+			
+									{
+										text: `🐤 ${row.voice_to_text === 0 ? ' ✅' : ''}`,
+										callback_data: 0	
+									},
+									{
+										text: `Text ${row.voice_to_text === 1 ? ' ✅' : ''}`,
+										callback_data: 1
+									}
+			
+								]
+			
+							]
+			
+						}
+			
+					})
+
+				}else{
+
+					bot.sendMessage(chatId, 'You can\'t use this command!')
+	
+				}
+
+			}else{
+
+				bot.sendMessage(chatId, 'You can\'t use this command!')
+
+			}
+
+		})
+
+	}
+
+}
