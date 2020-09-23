@@ -118,7 +118,8 @@ bot.on('callback_query', msg => {
 		
 				}
 
-				// showSettings(msg.from.id, msg.chat.type)
+				bot.sendSticker(chatId, 'CAACAgEAAxkBAAIDfl9q_6gV1dDxDWsXb7WvpkJ00-r_AAJ6EAACmX-IAqU-3GtbhUNmGwQ')
+				showSettings(chatId, 'private')
 
 			}else{
 
