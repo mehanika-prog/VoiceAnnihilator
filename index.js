@@ -11,7 +11,7 @@ const dbPath = path.join(__dirname, '/databases', '/va3000.sqlite3')
 
 //=================================//
 
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {polling: true})
+const bot = new TelegramBot('1384093348:AAEheFAHfeFQu-goUxKTq0qOI0WVZSZZjuU', {polling: true})
 
 const client = new speech.SpeechClient();
 
@@ -119,7 +119,7 @@ bot.on('callback_query', msg => {
 				}
 
 				bot.sendSticker(chatId, 'CAACAgEAAxkBAAIDfl9q_6gV1dDxDWsXb7WvpkJ00-r_AAJ6EAACmX-IAqU-3GtbhUNmGwQ')
-				showSettings(chatId, 'private')
+				.then(showSettings(chatId, 'private'))
 
 			}else{
 
@@ -249,31 +249,34 @@ const showSettings = (chatId, type) => {
 						}
 			
 					})
+					.then(
+
+						bot.sendMessage(chatId, 'Mode:', {
 			
-					bot.sendMessage(chatId, 'Mode:', {
-			
-						reply_markup: {
-			
-							inline_keyboard: [
-			
-								[
-			
-									{
-										text: `🐤 ${row.voice_to_text === 0 ? ' ✅' : ''}`,
-										callback_data: 0	
-									},
-									{
-										text: `Text ${row.voice_to_text === 1 ? ' ✅' : ''}`,
-										callback_data: 1
-									}
-			
+							reply_markup: {
+				
+								inline_keyboard: [
+				
+									[
+				
+										{
+											text: `🐤 ${row.voice_to_text === 0 ? ' ✅' : ''}`,
+											callback_data: 0	
+										},
+										{
+											text: `Text ${row.voice_to_text === 1 ? ' ✅' : ''}`,
+											callback_data: 1
+										}
+				
+									]
+				
 								]
-			
-							]
-			
-						}
-			
-					})
+				
+							}
+				
+						})
+
+					)
 
 				}else{
 
